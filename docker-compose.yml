@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
