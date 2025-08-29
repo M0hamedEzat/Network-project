@@ -1,14 +1,41 @@
+from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.forms import ModelForm
+from .models import User, Post
 
-from .models import User
-
+class PostForm(ModelForm):
+    class Meta:
+        model = Post
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'What\'s on your mind?'})
+        }
+    def clean_content(self):
+        content = self.cleaned_data.get("content")
+        if not content:
+            raise forms.ValidationError("Content is required.")
+        return content
 
 def index(request):
-    return render(request, "network/index.html")
+    form = PostForm()
+    if request.method == "POST":
+        which = request.POST.get("which")
+        if which == "new_post":
+            form = PostForm(request.POST)
+            if form.is_valid():
+                new_post = form.save(commit=False)
+                new_post.author = request.user
+                new_post.save()
+                return HttpResponseRedirect(reverse("index"))
+    all_posts = Post.objects.all()
+    return render(request, "network/index.html", {
+        "form": form,
+        "all_posts": all_posts
+    })
 
 
 def login_view(request):
@@ -61,3 +88,23 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    user_posts = user.posts.all()
+    return render(request, "network/profile.html", {
+        "profile_user": user,
+        "user_posts": user_posts,
+    })
+
+def follow_user(request, username):
+    user_to_follow = get_object_or_404(User, username=username)
+    if request.user.is_authenticated:
+        if user_to_follow in request.user.following.all():
+            request.user.following.remove(user_to_follow)
+            user_to_follow.followers.remove(request.user)
+        else:
+            request.user.following.add(user_to_follow)
+            user_to_follow.followers.add(request.user)
+    return HttpResponseRedirect(reverse("profile", args=[username]))

@@ -1,0 +1,42 @@
+{% extends "network/layout.html" %}
+ {% block title %} 
+{{ profile_user.username}}'s Profile 
+{% endblock %}
+ {% block body %}
+<div class="profile-container">
+  <h2>{{ profile_user.username }}'s Profile</h2>
+  <div class="user-info">
+    <p>Email: {{ profile_user.email }}</p>
+    <p>Joined: {{ profile_user.date_joined|date:"M d, Y" }}</p>
+    <p>Total Posts: {{ profile_user.posts.count }}</p>
+    <p>Total Followers: {{ profile_user.followers.count }}</p>
+    <p>Total Following: {{ profile_user.following.count }}</p>
+    {% if request.user.is_authenticated and request.user != profile_user %}
+    <a href="{% url 'follow' profile_user.username %}">
+      {% if profile_user in request.user.following.all %} Unfollow
+       {% else %}
+      Follow {% endif %}
+    </a>
+    {% endif %}
+  </div>
+  <h3>Posts</h3>
+  <div class="user-posts">
+    {% if user_posts %}
+    <ul class="posts-list">
+      {% for post in user_posts %}
+      <li class="post-item">
+        <div class="post-author">{{ post.author.username }}</div>
+        <div class="post-content">{{ post.content }}</div>
+        <div class="post-timestamp">
+          {{ post.created_at|date:"M d, Y g:i A" }}
+        </div>
+        <div class="post-likes">{{ post.likes.count }} Likes</div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No posts available.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

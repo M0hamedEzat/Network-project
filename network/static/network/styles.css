@@ -1,0 +1,165 @@
+/* ...existing code... */
+
+/* Post Creation Form Styling */
+.post-form-container {
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.post-form textarea {
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.post-form textarea:focus {
+  border-color: #1da1f2;
+  box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+}
+
+.post-form textarea::placeholder {
+  color: #657786;
+  font-style: italic;
+}
+
+.post-likes {
+  font-size: 14px;
+  color: #657786;
+  font-style: italic;
+}
+.post-author {
+  font-size: 14px;
+  color: #657786;
+  font-style: italic;
+}
+
+.submit-btn {
+  background: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background: #1a91da;
+}
+
+.submit-btn:active {
+  transform: translateY(1px);
+}
+
+/* Posts Feed Styling */
+.posts-container {
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.posts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-item {
+  padding: 20px;
+  border-bottom: 1px solid #e1e8ed;
+  transition: background-color 0.2s ease;
+}
+
+.post-item:last-child {
+  border-bottom: none;
+}
+
+.post-item:hover {
+  background-color: #f7f9fa;
+}
+
+.post-content {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #14171a;
+  margin-bottom: 8px;
+  word-wrap: break-word;
+}
+
+.post-timestamp {
+  font-size: 14px;
+  color: #657786;
+  font-style: italic;
+}
+
+/* Container for the whole page */
+.feed-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #657786;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .feed-container {
+    padding: 0 10px;
+  }
+
+  .post-form-container,
+  .posts-container {
+    border-radius: 8px;
+  }
+
+  .post-form textarea {
+    min-height: 60px;
+  }
+}
+
+.profile-container {
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h2 {
+  margin-top: 0;
+}
+
+.profile-container .user-info {
+  margin-bottom: 20px;
+}
+
+.profile-container .user-posts {
+  margin-top: 20px;
+}

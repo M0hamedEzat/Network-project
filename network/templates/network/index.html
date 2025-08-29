@@ -1,5 +1,37 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    TODO
+<div class="feed-container">
+
+    {% if user.is_authenticated %}
+    <div class="post-form-container">
+        <form action="{% url 'index' %}" method="POST" class="post-form">
+            {% csrf_token %}
+            {{ form }}
+            <input type="hidden" value="new_post" name="which">
+            <input value="Post" type="submit" class="submit-btn">
+        </form>
+    </div>
+    {% endif %}
+    
+    <div class="posts-container">
+        {% if all_posts %}
+        <ul class="posts-list">
+            {% for post in all_posts %}
+            <li class="post-item">
+                <a href="{% url 'profile' post.author.username %}"><div class="post-author">{{ post.author.username }}</div></a>
+                <div class="post-content">{{ post.content }}</div>
+                <div class="post-timestamp">{{ post.created_at|date:"M d, Y g:i A" }}</div>
+                <div class="post-likes">{{ post.likes.count }} Likes</div>
+
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            No posts yet. Be the first to share something!
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
