@@ -14,6 +14,6 @@ class Post(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True, default=0)
+    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True, default=None)
     def __str__(self):
         return f"Post by {self.author.username} on {self.created_at}"

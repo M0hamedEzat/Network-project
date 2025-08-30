@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.forms import ModelForm
 from .models import User, Post
@@ -108,3 +108,12 @@ def follow_user(request, username):
             request.user.following.add(user_to_follow)
             user_to_follow.followers.add(request.user)
     return HttpResponseRedirect(reverse("profile", args=[username]))
+
+def following_posts(request):
+    follow_user = request.user.following.all()
+    posts = Post.objects.filter(author__in=follow_user).order_by('-created_at')
+
+    return render(request, "network/following.html", {
+        "user": request.user,
+        "posts": posts
+    })

@@ -1,0 +1,43 @@
+{% extends "network/layout.html" %}
+
+{% block title %}
+Following
+{% endblock %}
+
+{% block body %}
+<div class="following-container">
+    <div class="following-header">
+        <h2>Posts from People You Follow</h2>
+        <p class="following-count">Following {{ user.following.count }} people</p>
+    </div>
+
+    {% if user.following.all %}
+        <div class="following-posts">
+            {% for post in posts %}
+                <div class="post-card">
+                    <div class="post-header">
+                        <a href="{% url 'profile' post.author.username %}" class="post-author-link">
+                                <div class="post-author">@{{ post.author.username }}</div>
+                            </a>
+                            <div class="post-timestamp">{{ post.created_at|date:"M d, Y g:i A" }}</div>
+                        </div>
+                        <div class="post-content">{{ post.content }}</div>
+                        <div class="post-footer">
+                            <div class="post-likes">
+                                <i class="heart-icon" >♥</i>
+                                {{ post.likes.count }} likes
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-following-state">
+            <div class="empty-icon">👥</div>
+            <h3>You're not following anyone yet</h3>
+            <p>Start following people to see their posts here!</p>
+            <a href="{% url 'index' %}" class="discover-btn">Discover People</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
