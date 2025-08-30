@@ -1,37 +1,115 @@
-{% extends "network/layout.html" %}
-
-{% block body %}
+{% extends "network/layout.html" %} {% block body %}
 <div class="feed-container">
+  {% if user.is_authenticated %}
+  <div class="post-form-container">
+    <form action="{% url 'index' %}" method="POST" class="post-form">
+      {% csrf_token %} {{ form }}
+      <input type="hidden" value="new_post" name="which" />
+      <input value="Post" type="submit" class="submit-btn" />
+    </form>
+  </div>
+  {% endif %}
 
-    {% if user.is_authenticated %}
-    <div class="post-form-container">
-        <form action="{% url 'index' %}" method="POST" class="post-form">
-            {% csrf_token %}
-            {{ form }}
-            <input type="hidden" value="new_post" name="which">
-            <input value="Post" type="submit" class="submit-btn">
-        </form>
-    </div>
-    {% endif %}
-    
-    <div class="posts-container">
-        {% if all_posts %}
-        <ul class="posts-list">
-            {% for post in all_posts reversed %}
-            <li class="post-item">
-                <a href="{% url 'profile' post.author.username %}"><div class="post-author">{{ post.author.username }}</div></a>
-                <div class="post-content">{{ post.content }}</div>
-                <div class="post-timestamp">{{ post.created_at|date:"M d, Y g:i A" }}</div>
-                <div class="post-likes">{{ post.likes.count }} Likes</div>
+  <div class="posts-container">
+    {% if all_posts %}
+    <ul class="posts-list">
+      {% for post in all_posts %}
+        {% if post.author == user %}
+        <button id="edit-post-{{ post.id }}"> Edit </button>
+        {% endif %}
+      <li class="post-item">
+        <a href="{% url 'profile' post.author.username %}"
+          ><div class="post-author">{{ post.author.username }}</div></a
+        >
+        <div class="post-content" id="post-{{ post.id }}">{{ post.content }}</div>
+        <div class="post-timestamp">
+          {{ post.created_at|date:"M d, Y g:i A" }}
+        </div>
+        <div class="post-likes">
+            <button id="like-post-{{ post.id }}">
+                <i class="heart-icon">♥</i>{{ post.likes.count }} likes
+            </button>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+          <div class="pagination">
+        {% if is_paginated %}
 
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <div class="empty-state">
-            No posts yet. Be the first to share something!
+          <span
+            >Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages}}</span>
+        <div class="pagination-controls">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+          {% endif %}
+
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">Next</a>
+          {% endif %}
         </div>
         {% endif %}
+      </div>
+
+    {% else %}
+    <div class="empty-state">
+      No posts yet. Be the first to share something!
     </div>
+    {% endif %}
+  </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("[id^='edit-post-']").forEach(element => {
+            element.addEventListener("click", function() {
+                const postId = this.id.split("-")[2];
+                const postContent = document.getElementById("post-" + postId);
+                const newContent = prompt("Edit your post:", postContent.innerText);
+                if (newContent !== null) {
+                    postContent.innerText = newContent;
+                    fetch("/edit-post/" + postId + "/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({ content: newContent })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            alert("Failed to update post.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+                    
+
+                }
+            });
+        });
+        document.querySelectorAll("[id^='like-post-']").forEach(element => {
+            element.addEventListener("click", function() {
+                const postId = this.id.split("-")[2];
+                fetch("/like-post/" + postId + "/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.innerHTML = `<i class="heart-icon">♥</i> ${data.likes_count} likes`;
+                    } else {
+                        alert("Failed to like post.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -6,6 +6,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.forms import ModelForm
 from .models import User, Post
+from django.core.paginator import Paginator
+import json
+from django.http import JsonResponse
 
 class PostForm(ModelForm):
     class Meta:
@@ -31,10 +34,16 @@ def index(request):
                 new_post.author = request.user
                 new_post.save()
                 return HttpResponseRedirect(reverse("index"))
-    all_posts = Post.objects.all()
+    all_posts = Post.objects.all().order_by("-created_at")
+    paginator = Paginator(all_posts, 10)  # Show 10 posts per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/index.html", {
         "form": form,
-        "all_posts": all_posts
+        "all_posts": page_obj,
+        "page_obj": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+        "paginator": paginator,
     })
 
 
@@ -92,10 +101,16 @@ def register(request):
 
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    user_posts = user.posts.all()
+    user_posts = user.posts.all().order_by("-created_at")
+    paginator = Paginator(user_posts, 10)  # Show 10 posts per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/profile.html", {
         "profile_user": user,
         "user_posts": user_posts,
+        "page_obj": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+        "paginator": paginator,
     })
 
 def follow_user(request, username):
@@ -112,8 +127,34 @@ def follow_user(request, username):
 def following_posts(request):
     follow_user = request.user.following.all()
     posts = Post.objects.filter(author__in=follow_user).order_by('-created_at')
-
+    paginator = Paginator(posts, 10)  # Show 10 posts per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/following.html", {
         "user": request.user,
-        "posts": posts
+        "posts": page_obj,
+        "page_obj": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+        "paginator": paginator,
     })
+
+def edit_post(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id, author=request.user)
+        data = json.loads(request.body)
+        post.content = data.get("content", post.content)
+        post.save()
+        return JsonResponse({"message": "Post updated successfully."})
+    return JsonResponse({"error": "Invalid request."}, status=400)
+
+def like_post(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
+        return JsonResponse({"success": True, "likes_count": post.likes.count(), "liked": liked})
+    return JsonResponse({"error": "Invalid request."}, status=400)
